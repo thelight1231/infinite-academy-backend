@@ -17,6 +17,7 @@ app.use((req, res, next) => {
     console.log('Incoming request:', {
         method: req.method,
         url: req.url,
+        originalUrl: req.originalUrl,
         path: req.path,
         body: req.body,
         headers: req.headers
@@ -24,20 +25,23 @@ app.use((req, res, next) => {
     next();
 });
 
+// Create router for auth routes
+const router = express.Router();
+
 // Test route
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
     console.log('Root route hit');
     res.json({ message: 'API is working!' });
 });
 
 // Test route for auth
-app.get('/auth', (req, res) => {
+router.get('/auth', (req, res) => {
     console.log('Auth route hit');
     res.json({ message: 'Auth endpoint is working!' });
 });
 
 // Auth routes
-app.post('/auth/register', async (req, res) => {
+router.post('/auth/register', async (req, res) => {
     console.log('Register route hit:', req.path);
     try {
         const { name, email, password } = req.body;
@@ -67,7 +71,7 @@ app.post('/auth/register', async (req, res) => {
     }
 });
 
-app.post('/auth/login', async (req, res) => {
+router.post('/auth/login', async (req, res) => {
     console.log('Login route hit:', req.path);
     try {
         const { email, password } = req.body;
@@ -97,6 +101,19 @@ app.post('/auth/login', async (req, res) => {
     }
 });
 
+// Handle 404s for the router
+router.use((req, res) => {
+    console.log('404 Not Found:', {
+        method: req.method,
+        url: req.url,
+        path: req.path
+    });
+    res.status(404).json({ message: 'Route not found' });
+});
+
+// Mount the router
+app.use('/.netlify/functions/api', router);
+
 // Handle 404s
 app.use((req, res) => {
     console.log('404 Not Found:', {
@@ -107,7 +124,7 @@ app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
 });
 
-// Error handling
+// Global error handling
 app.use((err, req, res, next) => {
     console.error('Global error:', err);
     res.status(500).json({ message: 'Internal server error', error: err.message });
