@@ -51,7 +51,7 @@ router.get('/', (req, res) => {
 });
 
 // Auth routes
-router.post('/auth/register', async (req, res) => {
+router.post('/.netlify/functions/api/auth/register', async (req, res) => {
     console.log('[DEBUG] Register route hit');
     try {
         const { name, email, password } = req.body;
@@ -100,7 +100,7 @@ router.post('/auth/register', async (req, res) => {
     }
 });
 
-router.post('/auth/login', async (req, res) => {
+router.post('/.netlify/functions/api/auth/login', async (req, res) => {
     console.log('[DEBUG] Login route hit');
     try {
         const { email, password } = req.body;
