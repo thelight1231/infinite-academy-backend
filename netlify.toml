@@ -6,17 +6,16 @@
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["express"]
+  included_files = ["config/**", "models/**"]
 
 [[redirects]]
-  from = "/.netlify/functions/api/*"
+  from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
-  force = true
 
 [[headers]]
   for = "/*"
     [headers.values]
-    Access-Control-Allow-Origin = "https://infinite112.netlify.app"
+    Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization, Accept"
-    Access-Control-Allow-Credentials = "true"
