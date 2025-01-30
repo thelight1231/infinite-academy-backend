@@ -1,5 +1,6 @@
 const express = require('express');
 const serverless = require('serverless-http');
+const cors = require('cors');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -13,6 +14,17 @@ const router = express.Router();
 
 // Connect to MongoDB
 connectDB().catch(console.error);
+
+// Simple CORS middleware
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'https://infinite112.netlify.app');
+    res.setHeader('Access-Control-Allow-Methods', '*');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    next();
+});
 
 app.use(express.json());
 
