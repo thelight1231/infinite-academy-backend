@@ -11,6 +11,7 @@
   from = "/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+  force = true
 
 [dev]
   publish = "public"
@@ -20,3 +21,5 @@
   for = "/*"
     [headers.values]
     Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, Accept"
