@@ -6,9 +6,10 @@
 [functions]
   node_bundler = "esbuild"
   included_files = ["./package.json"]
+  external_node_modules = ["express"]
 
 [[redirects]]
-  from = "/*"
+  from = "/.netlify/functions/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
   force = true

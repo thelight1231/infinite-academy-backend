@@ -5,7 +5,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: true, // Allow all origins
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
@@ -17,50 +17,93 @@ app.get('/', (req, res) => {
     res.json({ message: 'API is working!' });
 });
 
-// Auth routes - removed /api prefix since Netlify already adds /.netlify/functions/api
+// Auth routes
 app.post('/auth/register', async (req, res) => {
+    console.log('Register route hit');
+    console.log('Request body:', req.body);
+    
     try {
         const { name, email, password } = req.body;
-        console.log('Registration attempt:', { name, email }); // Add logging
         
+        if (!name || !email || !password) {
+            return res.status(400).json({ 
+                message: 'Missing required fields',
+                received: { name: !!name, email: !!email, password: !!password }
+            });
+        }
+
         // TODO: Add your database logic here
         // For now, we'll just mock a successful response
         const user = { id: 1, name, email };
         const token = 'mock-jwt-token';
 
-        res.status(201).json({
+        console.log('Sending successful response:', { user, token });
+        
+        return res.status(201).json({
             message: 'Registration successful',
             user,
             token
         });
     } catch (error) {
         console.error('Registration error:', error);
-        res.status(500).json({ message: 'Registration failed', error: error.message });
+        return res.status(500).json({ 
+            message: 'Registration failed', 
+            error: error.message 
+        });
     }
 });
 
 app.post('/auth/login', async (req, res) => {
+    console.log('Login route hit');
+    console.log('Request body:', req.body);
+    
     try {
         const { email, password } = req.body;
-        console.log('Login attempt:', { email }); // Add logging
         
+        if (!email || !password) {
+            return res.status(400).json({ 
+                message: 'Missing required fields',
+                received: { email: !!email, password: !!password }
+            });
+        }
+
         // TODO: Add your database logic here
         // For now, we'll just mock a successful response
         const user = { id: 1, name: 'Test User', email };
         const token = 'mock-jwt-token';
 
-        res.json({
+        console.log('Sending successful response:', { user, token });
+        
+        return res.json({
             message: 'Login successful',
             user,
             token
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(401).json({ message: 'Login failed', error: error.message });
+        return res.status(401).json({ 
+            message: 'Login failed', 
+            error: error.message 
+        });
     }
 });
 
 // Handle OPTIONS requests
 app.options('*', cors());
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Global error handler:', err);
+    res.status(500).json({ 
+        message: 'Internal server error', 
+        error: err.message 
+    });
+});
+
+// Handle 404s
+app.use((req, res) => {
+    console.log('404 Not Found:', req.method, req.url);
+    res.status(404).json({ message: 'Route not found' });
+});
 
 module.exports.handler = serverless(app);
