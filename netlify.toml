@@ -9,15 +9,23 @@
   included_files = ["config/**", "models/**"]
 
 [[redirects]]
-  from = "/.netlify/functions/api/*"
+  from = "/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
   force = true
-  headers = {Access-Control-Allow-Origin = "https://infinite112.netlify.app"}
+
+[[headers]]
+  for = "/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "https://infinite112.netlify.app"
+    Access-Control-Allow-Methods = "*"
+    Access-Control-Allow-Headers = "*"
+    Access-Control-Max-Age = "86400"
 
 [[headers]]
   for = "/.netlify/functions/api/*"
     [headers.values]
     Access-Control-Allow-Origin = "https://infinite112.netlify.app"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Methods = "*"
+    Access-Control-Allow-Headers = "*"
+    Access-Control-Max-Age = "86400"

@@ -1,6 +1,5 @@
 const express = require('express');
 const serverless = require('serverless-http');
-const cors = require('cors');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -14,16 +13,6 @@ const router = express.Router();
 
 // Connect to MongoDB
 connectDB().catch(console.error);
-
-// CORS middleware
-app.use(cors({
-    origin: 'https://infinite112.netlify.app',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Handle preflight requests
-app.options('*', cors());
 
 app.use(express.json());
 
