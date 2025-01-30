@@ -15,16 +15,13 @@ const router = express.Router();
 // Connect to MongoDB
 connectDB().catch(console.error);
 
-// Simple CORS middleware
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://infinite112.netlify.app');
-    res.setHeader('Access-Control-Allow-Methods', '*');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-    next();
-});
+// Enable CORS for all routes
+app.use(cors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+}));
 
 app.use(express.json());
 
@@ -55,7 +52,7 @@ router.get('/', (req, res) => {
 });
 
 // Auth routes
-router.post('/.netlify/functions/api/auth/register', async (req, res) => {
+router.post('/auth/register', async (req, res) => {
     console.log('[DEBUG] Register route hit');
     try {
         const { name, email, password } = req.body;
@@ -104,7 +101,7 @@ router.post('/.netlify/functions/api/auth/register', async (req, res) => {
     }
 });
 
-router.post('/.netlify/functions/api/auth/login', async (req, res) => {
+router.post('/auth/login', async (req, res) => {
     console.log('[DEBUG] Login route hit');
     try {
         const { email, password } = req.body;
