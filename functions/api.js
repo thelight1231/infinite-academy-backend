@@ -10,18 +10,27 @@ const connectDB = require('../config/database');
 const User = require('../models/User');
 
 const app = express();
+const router = express.Router();
 
 // Connect to MongoDB
 connectDB().catch(console.error);
 
 // Middleware
 app.use(cors({
-    origin: 'https://infinite112.netlify.app',
+    origin: ['https://infinite112.netlify.app', 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
 app.use(express.json());
+
+// Debug middleware
+app.use((req, res, next) => {
+    console.log(`[DEBUG] ${req.method} ${req.url}`);
+    console.log('[DEBUG] Headers:', req.headers);
+    console.log('[DEBUG] Body:', req.body);
+    next();
+});
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -36,20 +45,20 @@ app.use((req, res, next) => {
 });
 
 // Test route
-app.get('/', (req, res) => {
-    console.log('Root route hit');
+router.get('/', (req, res) => {
+    console.log('[DEBUG] Root route hit');
     res.json({ message: 'API is working!' });
 });
 
 // Auth routes
-app.post('/auth/register', async (req, res) => {
-    console.log('Register route hit');
+router.post('/auth/register', async (req, res) => {
+    console.log('[DEBUG] Register route hit');
     try {
         const { name, email, password } = req.body;
-        console.log('Registration data:', { name, email });
+        console.log('[DEBUG] Registration data:', { name, email });
 
         if (!name || !email || !password) {
-            console.log('Missing required fields');
+            console.log('[DEBUG] Missing required fields');
             return res.status(400).json({
                 message: 'Missing required fields',
                 received: { name: !!name, email: !!email, password: !!password }
@@ -59,14 +68,14 @@ app.post('/auth/register', async (req, res) => {
         // Check if user exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            console.log('User already exists:', email);
+            console.log('[DEBUG] User already exists:', email);
             return res.status(400).json({ message: 'User already exists' });
         }
 
         // Create new user
         const user = new User({ name, email, password });
         await user.save();
-        console.log('User created:', user._id);
+        console.log('[DEBUG] User created:', user._id);
 
         // Generate token
         const token = jwt.sign(
@@ -86,16 +95,16 @@ app.post('/auth/register', async (req, res) => {
             token
         });
     } catch (error) {
-        console.error('Registration error:', error);
+        console.error('[DEBUG] Registration error:', error);
         res.status(500).json({ message: 'Registration failed', error: error.message });
     }
 });
 
-app.post('/auth/login', async (req, res) => {
-    console.log('Login route hit');
+router.post('/auth/login', async (req, res) => {
+    console.log('[DEBUG] Login route hit');
     try {
         const { email, password } = req.body;
-        console.log('Login attempt:', email);
+        console.log('[DEBUG] Login attempt:', email);
 
         // Find user
         const user = await User.findOne({ email });
@@ -126,16 +135,19 @@ app.post('/auth/login', async (req, res) => {
             token
         });
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('[DEBUG] Login error:', error);
         res.status(401).json({ message: 'Login failed', error: error.message });
     }
 });
 
+// Mount router at /api
+app.use('/api', router);
+
 // Handle 404s
 app.use((req, res) => {
-    console.log('404 Not Found:', {
+    console.log('[DEBUG] 404 Not Found:', {
         method: req.method,
-        path: req.path,
+        url: req.url,
         originalUrl: req.originalUrl
     });
     res.status(404).json({ message: 'Route not found' });
@@ -143,7 +155,7 @@ app.use((req, res) => {
 
 // Error handling
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
+    console.error('[DEBUG] Error:', err);
     res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
