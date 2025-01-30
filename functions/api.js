@@ -28,6 +28,7 @@ app.use((req, res, next) => {
     console.log('Request received:', {
         method: req.method,
         path: req.path,
+        originalUrl: req.originalUrl,
         body: req.body,
         headers: req.headers
     });
@@ -41,7 +42,7 @@ app.get('/', (req, res) => {
 });
 
 // Auth routes
-app.post('/.netlify/functions/api/auth/register', async (req, res) => {
+app.post('/auth/register', async (req, res) => {
     console.log('Register route hit');
     try {
         const { name, email, password } = req.body;
@@ -90,7 +91,7 @@ app.post('/.netlify/functions/api/auth/register', async (req, res) => {
     }
 });
 
-app.post('/.netlify/functions/api/auth/login', async (req, res) => {
+app.post('/auth/login', async (req, res) => {
     console.log('Login route hit');
     try {
         const { email, password } = req.body;
@@ -132,7 +133,11 @@ app.post('/.netlify/functions/api/auth/login', async (req, res) => {
 
 // Handle 404s
 app.use((req, res) => {
-    console.log('404 Not Found:', req.method, req.path);
+    console.log('404 Not Found:', {
+        method: req.method,
+        path: req.path,
+        originalUrl: req.originalUrl
+    });
     res.status(404).json({ message: 'Route not found' });
 });
 
