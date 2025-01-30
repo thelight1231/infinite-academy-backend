@@ -148,7 +148,8 @@ app.use((req, res) => {
     console.log('[DEBUG] 404 Not Found:', {
         method: req.method,
         url: req.url,
-        originalUrl: req.originalUrl
+        originalUrl: req.originalUrl,
+        path: req.path
     });
     res.status(404).json({ message: 'Route not found' });
 });
