@@ -1,7 +1,18 @@
 const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+// Import models and database connection
+const connectDB = require('../config/database');
+const User = require('../models/User');
+
 const app = express();
+
+// Connect to MongoDB
+connectDB().catch(console.error);
 
 // Middleware
 app.use(cors({
@@ -12,57 +23,47 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Log all requests
-app.use((req, res, next) => {
-    console.log('Incoming request:', {
-        method: req.method,
-        url: req.url,
-        originalUrl: req.originalUrl,
-        path: req.path,
-        body: req.body,
-        headers: req.headers
-    });
-    next();
-});
-
 // Create router for auth routes
 const router = express.Router();
 
 // Test route
 router.get('/', (req, res) => {
-    console.log('Root route hit');
     res.json({ message: 'API is working!' });
-});
-
-// Test route for auth
-router.get('/auth', (req, res) => {
-    console.log('Auth route hit');
-    res.json({ message: 'Auth endpoint is working!' });
 });
 
 // Auth routes
 router.post('/auth/register', async (req, res) => {
-    console.log('Register route hit:', req.path);
     try {
         const { name, email, password } = req.body;
-        console.log('Registration data:', { name, email });
+        console.log('Registration attempt:', { name, email });
 
-        if (!name || !email || !password) {
-            console.log('Missing required fields');
-            return res.status(400).json({
-                message: 'Missing required fields',
-                received: { name: !!name, email: !!email, password: !!password }
-            });
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Mock successful registration
-        const user = { id: 1, name, email };
-        const token = 'mock-jwt-token';
+        // Create new user
+        const user = new User({ name, email, password });
+        await user.save();
 
-        console.log('Sending successful registration response');
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        // Return user data (excluding password)
+        const userData = {
+            id: user._id,
+            name: user.name,
+            email: user.email
+        };
+
         res.status(201).json({
             message: 'Registration successful',
-            user,
+            user: userData,
             token
         });
     } catch (error) {
@@ -72,27 +73,39 @@ router.post('/auth/register', async (req, res) => {
 });
 
 router.post('/auth/login', async (req, res) => {
-    console.log('Login route hit:', req.path);
     try {
         const { email, password } = req.body;
         console.log('Login attempt:', { email });
 
-        if (!email || !password) {
-            console.log('Missing required fields');
-            return res.status(400).json({
-                message: 'Missing required fields',
-                received: { email: !!email, password: !!password }
-            });
+        // Find user
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // Mock successful login
-        const user = { id: 1, name: 'Test User', email };
-        const token = 'mock-jwt-token';
+        // Check password
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
 
-        console.log('Sending successful login response');
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        // Return user data (excluding password)
+        const userData = {
+            id: user._id,
+            name: user.name,
+            email: user.email
+        };
+
         res.json({
             message: 'Login successful',
-            user,
+            user: userData,
             token
         });
     } catch (error) {
@@ -101,30 +114,10 @@ router.post('/auth/login', async (req, res) => {
     }
 });
 
-// Handle 404s for the router
-router.use((req, res) => {
-    console.log('404 Not Found:', {
-        method: req.method,
-        url: req.url,
-        path: req.path
-    });
-    res.status(404).json({ message: 'Route not found' });
-});
-
 // Mount the router
 app.use('/.netlify/functions/api', router);
 
-// Handle 404s
-app.use((req, res) => {
-    console.log('404 Not Found:', {
-        method: req.method,
-        url: req.url,
-        path: req.path
-    });
-    res.status(404).json({ message: 'Route not found' });
-});
-
-// Global error handling
+// Error handling
 app.use((err, req, res, next) => {
     console.error('Global error:', err);
     res.status(500).json({ message: 'Internal server error', error: err.message });
