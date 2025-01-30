@@ -5,18 +5,12 @@
 
 [functions]
   node_bundler = "esbuild"
-  included_files = ["./package.json"]
   external_node_modules = ["express"]
 
 [[redirects]]
-  from = "/.netlify/functions/api/*"
+  from = "/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
-  force = true
-
-[dev]
-  publish = "public"
-  functions = "functions"
 
 [[headers]]
   for = "/*"
