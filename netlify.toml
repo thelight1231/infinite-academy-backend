@@ -1,0 +1,22 @@
+[build]
+  command = "npm install"
+  functions = "functions"
+  publish = "public"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["./package.json"]
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[dev]
+  publish = "public"
+  functions = "functions"
+
+[[headers]]
+  for = "/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"
