@@ -140,8 +140,8 @@ router.post('/auth/login', async (req, res) => {
     }
 });
 
-// Mount router at /api
-app.use('/api', router);
+// Mount router at root
+app.use(router);
 
 // Handle 404s
 app.use((req, res) => {
