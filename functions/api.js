@@ -17,10 +17,10 @@ connectDB().catch(console.error);
 
 // Middleware
 app.use(cors({
-    origin: ['https://infinite112.netlify.app', 'http://localhost:3000'],
-    credentials: true,
+    origin: 'https://infinite112.netlify.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 app.use(express.json());
 
