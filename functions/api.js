@@ -15,18 +15,15 @@ const router = express.Router();
 // Connect to MongoDB
 connectDB().catch(console.error);
 
-// CORS middleware - before any routes
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://infinite112.netlify.app');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
-    // Handle preflight
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-    next();
-});
+// CORS middleware
+app.use(cors({
+    origin: 'https://infinite112.netlify.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.use(express.json());
 
